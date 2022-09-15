@@ -12,8 +12,8 @@ class Ship{
     this.hitCount++;
   }
 
-  isSunk(length, hitCount){
-    if(hitCount = length){
+  isSunk(){
+    if(this.hitCount == this.length){
       this.sunk = true;
     }
   }
@@ -58,35 +58,40 @@ class Gameboard{
 
       if(grid.classList.contains('aircraftCarrier')){
         grid.classList.add('hit');
-        this.ships[aircraftCarrier].hit();
-        this.ships[aircraftCarrier].isSunk();
+        let foundShip = this.ships.find(ship => ship.name === 'aircraftCarrier');
+        foundShip.hit();
+        foundShip.isSunk();
+        console.log(foundShip);
       }
       else if(grid.classList.contains('submarine')){
         grid.classList.add('hit');
-        this.ships[submarine].hit();
-        this.ships[submarine].isSunk();
+        let foundShip = this.ships.find(ship => ship.name === 'submarine');
+        foundShip.hit();
+        foundShip.isSunk();
+        console.log(foundShip);
       }
       else if(grid.classList.contains('cruiser')){
         grid.classList.add('hit');
-        this.ships[cruiser].hit();
-        this.ships[cruiser].isSunk();
+        let foundShip = this.ships.find(ship => ship.name === 'cruiser');
+        foundShip.hit();
+        foundShip.isSunk();
+        console.log(foundShip);
       }
       else if(grid.classList.contains('patrolBoat')){
         grid.classList.add('hit');
-        this.ships[patrolBoat].hit();
-        this.ships[patrolBoat].isSunk();
+        let foundShip = this.ships.find(ship => ship.name === 'patrolBoat');
+        foundShip.hit();
+        foundShip.isSunk();
+        console.log(foundShip);
       }
       else{
         grid.classList.add('miss');
       }
-
-      checkAllShipsSunk();
    }
 
    checkAllShipsSunk(){
     let truthArr = [];
     this.ships.forEach(ship => truthArr.push(ship.sunk));
-    console.log('all ships are lost: ' + truthArr.every(element => element === true));
     return truthArr.every(element => element === true);
    }
 }
@@ -102,33 +107,43 @@ class Player{
 
 const gameModule = (() => {
 
-  const selectGrid = (e) => {
-    return e.target.id;
-  }
+  let player1;
+  let player2;
+  let player1Gameboard;
+  let player2Gameboard;
+  let playerGridA;
+  let playerGridB;
+  let turn = 1;
 
-  const playerTurn = (turn, player1, player2, player1Gameboard, player2Gameboard) => {
-    const playerGridA = document.querySelector(`#${player1.playerName}`).childNodes;
-    const playerGridB = document.querySelector(`#${player2.playerName}`).childNodes;
-
-
-      if(turn%2 == 0){
-        //player 2 turn to select grid
-        playerGridB.forEach(grid => grid.removeEventListener('click', (e) => selectGrid(e)));
-        playerGridA.forEach(grid => grid.addEventListener('click', (e) => selectGrid(e)));
-        console.log(turn);
-        turn++
-        return updateBoard(turn, player1, player2, player1Gameboard, player2Gameboard);
-      }else{
-        //player 1 turn to select grid
-        playerGridA.forEach(grid => grid.removeEventListener('click', (e) => selectGrid(e)));
-        playerGridB.forEach(grid => grid.addEventListener('click', (e) => selectGrid(e)));
-        turn++
-        return updateBoard(turn, player1, player2, player1Gameboard, player2Gameboard);
+  const selectGrid = (e, playerGameBoard) => {
+    let coordinates= e.target.id;
+    console.log(turn);
+    console.log(playerGameBoard.player.playerName);
+    if(turn%2 === 1 && playerGameBoard.player.playerName == 'B'){
+      console.log('we got called!');
+      if(checkMove(coordinates)){
+        playerGameBoard.receiveAttack(coordinates);
+        updateBoard();
+        return turn++;
       }
+    }
+    else if(turn%2 === 0 && playerGameBoard.player.playerName == 'A'){
+        console.log('we got called!');
+        if(checkMove(coordinates)){
+          playerGameBoard.receiveAttack(coordinates);
+          updateBoard();
+          return turn++;
+      }
+    }
   }
 
   const checkMove = (id) => {
     let grid = document.querySelector(`#${id}`);
+    if(grid.classList.contains('hit') || grid.classList.contains('miss')){
+      return false;
+    }else{
+      return true;
+    }
   }
 
   const initializeGame = () => {
@@ -137,13 +152,18 @@ const gameModule = (() => {
     let submarine = new Ship('submarine', 4, 0, false, ['13','23','33','43']);
     let cruiser = new Ship('cruiser', 3, 0, false, ['15', '25', '35']);
     let patrolBoat = new Ship('patrolBoat', 2, 0, false, ['17', '27']);
+
+    let aircraftCarrier1 = new Ship('aircraftCarrier', 5, 0, false, ['11', '21', '31', '41', '51']);
+    let submarine1 = new Ship('submarine', 4, 0, false, ['13','23','33','43']);
+    let cruiser1 = new Ship('cruiser', 3, 0, false, ['15', '25', '35']);
+    let patrolBoat1 = new Ship('patrolBoat', 2, 0, false, ['17', '27']);
     //create players
-    let player1 = new Player('A', false);
-    let player2 = new Player('B', false);
+    player1 = new Player('A', false);
+    player2 = new Player('B', false);
 
     //create board
-    let player1Gameboard = new Gameboard(100, player1, [aircraftCarrier, submarine, cruiser, patrolBoat]);
-    let player2Gameboard = new Gameboard(100, player2, [aircraftCarrier, submarine, cruiser, patrolBoat]);
+    player1Gameboard = new Gameboard(100, player1, [aircraftCarrier, submarine, cruiser, patrolBoat]);
+    player2Gameboard = new Gameboard(100, player2, [aircraftCarrier1, submarine1, cruiser1, patrolBoat1]);
 
     player1Gameboard.createGameBoard();
     player2Gameboard.createGameBoard();
@@ -151,14 +171,19 @@ const gameModule = (() => {
     player1Gameboard.ships.forEach(ship => player1Gameboard.placeShip(ship));
     player2Gameboard.ships.forEach(ship => player2Gameboard.placeShip(ship));
 
-    let turn = 1;
-    playerTurn(turn, player1, player2, player1Gameboard, player2Gameboard);
+    playerGridA = document.querySelector(`#${player1.playerName}`).childNodes;
+    playerGridB = document.querySelector(`#${player2.playerName}`).childNodes;
+
+    playerGridA.forEach(grid => grid.addEventListener('click', (e) => selectGrid(e, player1Gameboard)));
+    playerGridB.forEach(grid => grid.addEventListener('click', (e) => selectGrid(e, player2Gameboard)));
   }
 
-  const updateBoard = (turn, player1, player2, player1Gameboard, player2Gameboard) => {
-    player1Gameboard.checkAllShipsSunk();
-    player2Gameboard.checkAllShipsSunk();
-    playerTurn(turn, player1, player2, player1Gameboard, player2Gameboard);
+  const updateBoard = () => {
+    if(player1Gameboard.checkAllShipsSunk() === true){
+      console.log('player 1 ships are all sunk, player 2 Wins!');
+    }else if (player2Gameboard.checkAllShipsSunk() === true){
+      console.log('player 2 ships are all sunk, player 1 Wins!');
+    }
   }
 
   return {
