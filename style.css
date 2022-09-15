@@ -1,0 +1,34 @@
+
+.main-container {
+  display: grid;
+  grid: 1fr / repeat(2, 1fr);
+}
+
+.gameboard {
+  display: grid;
+  grid: repeat(10, 50px) / repeat(10, 50px);
+  justify-self: center;
+  padding: 2rem;
+}
+
+
+.gameGrid {
+  border: 1px solid;
+}
+
+
+.battleship {
+  background: navy;
+}
+
+.npc-battleship{
+  
+}
+
+.hit {
+  background: red;
+}
+
+.miss {
+  background: black;
+}
