@@ -120,7 +120,6 @@ const gameModule = (() => {
     console.log(turn);
     console.log(playerGameBoard.player.playerName);
     if(turn%2 === 1 && playerGameBoard.player.playerName == 'B'){
-      console.log('we got called!');
       if(checkMove(coordinates)){
         playerGameBoard.receiveAttack(coordinates);
         updateBoard();
@@ -128,7 +127,6 @@ const gameModule = (() => {
       }
     }
     else if(turn%2 === 0 && playerGameBoard.player.playerName == 'A'){
-        console.log('we got called!');
         if(checkMove(coordinates)){
           playerGameBoard.receiveAttack(coordinates);
           updateBoard();
@@ -146,20 +144,68 @@ const gameModule = (() => {
     }
   }
 
-  const initializeGame = () => {
-    //create all ships
-    let aircraftCarrier = new Ship('aircraftCarrier', 5, 0, false, ['11', '21', '31', '41', '51']);
-    let submarine = new Ship('submarine', 4, 0, false, ['13','23','33','43']);
-    let cruiser = new Ship('cruiser', 3, 0, false, ['15', '25', '35']);
-    let patrolBoat = new Ship('patrolBoat', 2, 0, false, ['17', '27']);
+  const randomNum = (min, max) => {
+    return Math.floor((Math.random()*max) + min);
+  }
 
-    let aircraftCarrier1 = new Ship('aircraftCarrier', 5, 0, false, ['11', '21', '31', '41', '51']);
-    let submarine1 = new Ship('submarine', 4, 0, false, ['13','23','33','43']);
-    let cruiser1 = new Ship('cruiser', 3, 0, false, ['15', '25', '35']);
-    let patrolBoat1 = new Ship('patrolBoat', 2, 0, false, ['17', '27']);
+  const generatePosition = (ship, align, playerBoard) => {
+    let shipLength = ship.length;
+    let posArr = [];
+    let truthArr = [];
+    let playerName = playerBoard.player.playerName;
+    let startingPoint = randomNum(1, 98);
+
+    if(align === 'horizontal'){
+      for(let i = 0; i < shipLength; i++)
+      {
+        posArr.push(startingPoint++);
+      }
+    }else if(align === 'vertical'){
+      posArr.push(startingPoint);
+      for(let i = 0; i < shipLength - 1; i++){
+        posArr.push(posArr[i]+10);
+      }
+    }
+
+    if(posArr.find(element => element > 99)){
+      console.log('over 99');
+      return generatePosition(ship, align, playerBoard);
+    }else if(posArr.find(element => element%10 === 9) && posArr.find(element => element%10 === 0)){
+      console.log('out of bound to the right');
+      return generatePosition(ship, align, playerBoard);
+    }
+
+    posArr.forEach(num => truthArr.push(document.querySelector(`#${playerName+num}`).classList.contains('battleship')));
+    if(truthArr.includes(true)){
+      return generatePosition(ship, align, playerBoard);
+    }
+
+    console.log(posArr);
+    return posArr;
+  }
+
+
+
+  const initializeGame = () => {
+    //add title
+    document.querySelector('.title').textContent = 'BattleShip!';
+    document.querySelector('#player1').textContent = 'player 1';
+    document.querySelector('#player2').textContent = 'player 2';
+
     //create players
     player1 = new Player('A', false);
     player2 = new Player('B', false);
+
+    //create all ships
+    let aircraftCarrier = new Ship('aircraftCarrier', 5, 0, false);
+    let submarine = new Ship('submarine', 4, 0, false);
+    let cruiser = new Ship('cruiser', 3, 0, false);
+    let patrolBoat = new Ship('patrolBoat', 2, 0, false);
+
+    let aircraftCarrier1 = new Ship('aircraftCarrier', 5, 0, false);
+    let submarine1 = new Ship('submarine', 4, 0, false);
+    let cruiser1 = new Ship('cruiser', 3, 0, false);
+    let patrolBoat1 = new Ship('patrolBoat', 2, 0, false);
 
     //create board
     player1Gameboard = new Gameboard(100, player1, [aircraftCarrier, submarine, cruiser, patrolBoat]);
@@ -168,21 +214,65 @@ const gameModule = (() => {
     player1Gameboard.createGameBoard();
     player2Gameboard.createGameBoard();
 
-    player1Gameboard.ships.forEach(ship => player1Gameboard.placeShip(ship));
-    player2Gameboard.ships.forEach(ship => player2Gameboard.placeShip(ship));
-
     playerGridA = document.querySelector(`#${player1.playerName}`).childNodes;
     playerGridB = document.querySelector(`#${player2.playerName}`).childNodes;
 
     playerGridA.forEach(grid => grid.addEventListener('click', (e) => selectGrid(e, player1Gameboard)));
     playerGridB.forEach(grid => grid.addEventListener('click', (e) => selectGrid(e, player2Gameboard)));
+
+    async function player1SetShips(){
+
+      try{
+        aircraftCarrier.position = await generatePosition(aircraftCarrier, 'horizontal', player1Gameboard);
+        player1Gameboard.placeShip(aircraftCarrier);
+        submarine.position = await generatePosition(submarine, 'horizontal', player1Gameboard);
+        player1Gameboard.placeShip(submarine);
+        cruiser.position = await generatePosition(cruiser, 'horizontal', player1Gameboard);
+        player1Gameboard.placeShip(cruiser);
+        patrolBoat.position = await generatePosition(patrolBoat, 'horizontal', player1Gameboard);
+        player1Gameboard.placeShip(patrolBoat);
+      } catch (err){
+        console.log(err);
+      }
+
+    }
+
+    player1SetShips();
+
+    async function player2SetShips(){
+
+      try{
+        aircraftCarrier1.position = await generatePosition(aircraftCarrier1, 'horizontal', player2Gameboard);
+        player2Gameboard.placeShip(aircraftCarrier1);
+        submarine1.position = await generatePosition(submarine1, 'horizontal', player2Gameboard);
+        player2Gameboard.placeShip(submarine1);
+        cruiser1.position = await generatePosition(cruiser1, 'horizontal', player2Gameboard);
+        player2Gameboard.placeShip(cruiser1);
+        patrolBoat1.position = await generatePosition(patrolBoat1, 'horizontal', player2Gameboard);
+        player2Gameboard.placeShip(patrolBoat1);
+      } catch (err){
+        console.log(err);
+      }
+
+    }
+
+    player2SetShips();
   }
 
   const updateBoard = () => {
+
+    let boardA = document.querySelector(`#${player1.playerName}`);
+    let boardB = document.querySelector(`#${player2.playerName}`);
+
     if(player1Gameboard.checkAllShipsSunk() === true){
-      console.log('player 1 ships are all sunk, player 2 Wins!');
+      document.querySelector('.title').textContent = 'player 1 ships are all destroyed, player 2 Wins!';
+      //clone elements to remove all EventListeners
+      boardA.replaceWith(boardA.cloneNode(true));
+      boardB.replaceWith(boardB.cloneNode(true));
     }else if (player2Gameboard.checkAllShipsSunk() === true){
-      console.log('player 2 ships are all sunk, player 1 Wins!');
+      document.querySelector('.title').textContent = 'player 2 ships are all destroyed, player 1 Wins!';
+      boardA.replaceWith(boardA.cloneNode(true));
+      boardB.replaceWith(boardB.cloneNode(true));
     }
   }
 
