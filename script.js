@@ -61,28 +61,24 @@ class Gameboard{
         let foundShip = this.ships.find(ship => ship.name === 'aircraftCarrier');
         foundShip.hit();
         foundShip.isSunk();
-        console.log(foundShip);
       }
       else if(grid.classList.contains('submarine')){
         grid.classList.add('hit');
         let foundShip = this.ships.find(ship => ship.name === 'submarine');
         foundShip.hit();
         foundShip.isSunk();
-        console.log(foundShip);
       }
       else if(grid.classList.contains('cruiser')){
         grid.classList.add('hit');
         let foundShip = this.ships.find(ship => ship.name === 'cruiser');
         foundShip.hit();
         foundShip.isSunk();
-        console.log(foundShip);
       }
       else if(grid.classList.contains('patrolBoat')){
         grid.classList.add('hit');
         let foundShip = this.ships.find(ship => ship.name === 'patrolBoat');
         foundShip.hit();
         foundShip.isSunk();
-        console.log(foundShip);
       }
       else{
         grid.classList.add('miss');
@@ -168,19 +164,19 @@ const gameModule = (() => {
     }
 
     if(posArr.find(element => element > 99)){
-      console.log('over 99');
+
       return generatePosition(ship, align, playerBoard);
     }else if(posArr.find(element => element%10 === 9) && posArr.find(element => element%10 === 0)){
-      console.log('out of bound to the right');
+
       return generatePosition(ship, align, playerBoard);
     }
 
     posArr.forEach(num => truthArr.push(document.querySelector(`#${playerName+num}`).classList.contains('battleship')));
     if(truthArr.includes(true)){
+
       return generatePosition(ship, align, playerBoard);
     }
 
-    console.log(posArr);
     return posArr;
   }
 
@@ -194,7 +190,7 @@ const gameModule = (() => {
 
     //create players
     player1 = new Player('A', false);
-    player2 = new Player('B', false);
+    player2 = new Player('B', true);
 
     //create all ships
     let aircraftCarrier = new Ship('aircraftCarrier', 5, 0, false);
@@ -225,9 +221,9 @@ const gameModule = (() => {
       try{
         aircraftCarrier.position = await generatePosition(aircraftCarrier, 'horizontal', player1Gameboard);
         player1Gameboard.placeShip(aircraftCarrier);
-        submarine.position = await generatePosition(submarine, 'horizontal', player1Gameboard);
+        submarine.position = await generatePosition(submarine, 'vertical', player1Gameboard);
         player1Gameboard.placeShip(submarine);
-        cruiser.position = await generatePosition(cruiser, 'horizontal', player1Gameboard);
+        cruiser.position = await generatePosition(cruiser, 'vertical', player1Gameboard);
         player1Gameboard.placeShip(cruiser);
         patrolBoat.position = await generatePosition(patrolBoat, 'horizontal', player1Gameboard);
         player1Gameboard.placeShip(patrolBoat);
@@ -244,9 +240,9 @@ const gameModule = (() => {
       try{
         aircraftCarrier1.position = await generatePosition(aircraftCarrier1, 'horizontal', player2Gameboard);
         player2Gameboard.placeShip(aircraftCarrier1);
-        submarine1.position = await generatePosition(submarine1, 'horizontal', player2Gameboard);
+        submarine1.position = await generatePosition(submarine1, 'vertical', player2Gameboard);
         player2Gameboard.placeShip(submarine1);
-        cruiser1.position = await generatePosition(cruiser1, 'horizontal', player2Gameboard);
+        cruiser1.position = await generatePosition(cruiser1, 'vertical', player2Gameboard);
         player2Gameboard.placeShip(cruiser1);
         patrolBoat1.position = await generatePosition(patrolBoat1, 'horizontal', player2Gameboard);
         player2Gameboard.placeShip(patrolBoat1);
